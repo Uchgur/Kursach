@@ -29,14 +29,14 @@ namespace book_hotel_api.Controllers
         public async Task<ActionResult<List<HotelDTO>>> Get()
         {
             var queryable = _context.Hotels.AsQueryable();
-            var actors = await queryable.OrderBy(x => x.Name).ToListAsync();
-            return _mapper.Map<List<HotelDTO>>(actors);
+            var hotels = await queryable.OrderBy(x => x.Name).ToListAsync();
+            return _mapper.Map<List<HotelDTO>>(hotels);
         }
 
-        [HttpGet("{Id:int}")]
+        [HttpGet("hotel/{Id:int}")]
         public async Task<ActionResult<HotelDTO>> Get(int id)
         {
-            var hotel = await _context.Hotels.FirstOrDefaultAsync(x => x.Id == id);
+            var hotel = await _context.Hotels.Include(x => x.Rooms).Include(x => x.Images).FirstOrDefaultAsync(x => x.Id == id);
 
             if (hotel == null)
             {
@@ -46,7 +46,7 @@ namespace book_hotel_api.Controllers
             return _mapper.Map<HotelDTO>(hotel);
         }
 
-        [HttpPost]
+        [HttpPost("create")]
         public async Task<ActionResult> Post([FromForm] HotelCreationDTO hotelCreationDTO)
         {
             var hotel = _mapper.Map<Hotel>(hotelCreationDTO);
@@ -61,7 +61,7 @@ namespace book_hotel_api.Controllers
             return NoContent();
         }
 
-        [HttpPut("{Id:int}")]
+        [HttpPut("edit/{Id:int}")]
         public async Task<ActionResult> Put(int id, [FromForm] HotelCreationDTO hotelCreationDTO)
         {
             var hotel = await _context.Hotels.FirstOrDefaultAsync(x => x.Id == id);
@@ -82,7 +82,7 @@ namespace book_hotel_api.Controllers
             return NoContent();
         }
 
-        [HttpDelete("{id:int}")]
+        [HttpDelete("delete/{id:int}")]
         public async Task<ActionResult> Delete(int id)
         {
             var hotel = await _context.Hotels.FirstOrDefaultAsync(x => x.Id == id);

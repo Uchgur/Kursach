@@ -8,8 +8,14 @@ namespace book_hotel_api.Helpers
     {
         public AutoMapper() 
         {
-            CreateMap<HotelDTO, Hotel>().ReverseMap();
-            CreateMap<HotelCreationDTO, Hotel>();
+            CreateMap<Hotel, HotelDTO>().ReverseMap();
+            CreateMap<HotelCreationDTO, Hotel>().ForMember(x => x.Image, options => options.Ignore());
+
+            CreateMap<RoomDTO, Room>().ReverseMap();
+            CreateMap<RoomCreationDTO, Room>().ForMember(x => x.Image, options => options.Ignore());
+
+            CreateMap<ImageDTO, Image>().ReverseMap();
+            CreateMap<ImageCreationDTO, Image>().ForMember(x => x.File, options => options.Ignore());
         }
     }
 }

@@ -9,6 +9,8 @@ namespace book_hotel_api.Entities
         [StringLength(50)]
         public string Name { get; set; }
         [Required]
+        public string City { get; set; }
+        [Required]
         public string Address { get; set; }
         [Required]
         public string ContactInformation { get; set; }
@@ -16,6 +18,7 @@ namespace book_hotel_api.Entities
         [StringLength(5000)]
         public string Description { get; set; }
         public string? Image { get; set; }
-
+        public List<Image>? Images { get; set; }
+        public List<Room>? Rooms { get; set; }
     }
 }
