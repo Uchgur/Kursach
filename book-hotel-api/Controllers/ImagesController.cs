@@ -3,6 +3,7 @@ using book_hotel_api.DTOs;
 using book_hotel_api.Entities;
 using book_hotel_api.Helpers;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
 namespace book_hotel_api.Controllers
@@ -23,6 +24,14 @@ namespace book_hotel_api.Controllers
             _context = context;
             _mapper = mapper;
             _fileStorageService = fileStorageService;
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<List<ImageDTO>>> Get(int hotelId)
+        {
+            var queryable = _context.Image.AsQueryable().Where(x => x.HotelId == hotelId);
+            var images = await queryable.OrderBy(x => x.Id).ToListAsync();
+            return _mapper.Map<List<ImageDTO>>(images);
         }
 
         [HttpPost("create")]
