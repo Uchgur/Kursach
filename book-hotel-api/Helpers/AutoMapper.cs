@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using book_hotel_api.DTOs;
 using book_hotel_api.Entities;
+using Microsoft.AspNetCore.Identity;
 
 namespace book_hotel_api.Helpers
 {
@@ -16,6 +17,8 @@ namespace book_hotel_api.Helpers
 
             CreateMap<ImageDTO, Image>().ReverseMap();
             CreateMap<ImageCreationDTO, Image>().ForMember(x => x.File, options => options.Ignore());
+
+            CreateMap<IdentityUser, UserDTO>();
         }
     }
 }

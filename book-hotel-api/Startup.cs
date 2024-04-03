@@ -70,6 +70,13 @@ namespace HotelAPI
                     ClockSkew = TimeSpan.Zero
                 };
             });
+
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("IsAdmin", policy => policy.RequireClaim("role", "admin"));
+                options.AddPolicy("IsHotelOwner", policy => policy.RequireClaim("role", "hotelOwner"));
+            });
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

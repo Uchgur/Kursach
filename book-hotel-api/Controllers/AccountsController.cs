@@ -1,7 +1,10 @@
 ﻿using AutoMapper;
 using book_hotel_api.DTOs;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -30,6 +33,31 @@ namespace book_hotel_api.Controllers
             _configuration = configuration;
             _context = context;
             _mapper = mapper;
+        }
+
+        [HttpGet("listUsers")]
+        public async Task<ActionResult<List<UserDTO>>> GetListUsers()
+        {
+            var queryable = _context.Users.AsQueryable();
+            var users = await queryable.OrderBy(x => x.Email).ToListAsync();
+
+            return _mapper.Map<List<UserDTO>>(users);
+        }
+
+        [HttpPost("makeAdmin")]
+        public async Task<ActionResult> MakeAdmin([FromBody] string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            await _userManager.AddClaimAsync(user, new Claim("role", "admin"));
+            return NoContent();
+        }
+
+        [HttpPost("makeHotelOwner")]
+        public async Task<ActionResult> MakeHotelOwner([FromBody] string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            await _userManager.AddClaimAsync(user, new Claim("role", "hotelOwner"));
+            return NoContent();
         }
 
         [HttpPost("create")]
