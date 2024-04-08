@@ -18,6 +18,9 @@ namespace book_hotel_api.Helpers
             CreateMap<ImageDTO, Image>().ReverseMap();
             CreateMap<ImageCreationDTO, Image>().ForMember(x => x.File, options => options.Ignore());
 
+            CreateMap<ReservationDTO, Reservation>().ReverseMap();
+            CreateMap<ReservationCreationDTO, Reservation>();
+
             CreateMap<IdentityUser, UserDTO>();
         }
     }

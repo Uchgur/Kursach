@@ -20,5 +20,6 @@ namespace book_hotel_api
         public DbSet<Hotel> Hotels { get; set; }
         public DbSet<Room> Rooms { get; set; }
         public DbSet<Image> Image { get; set; }
+        public DbSet<Reservation> Reservations { get; set; }
     }
 }

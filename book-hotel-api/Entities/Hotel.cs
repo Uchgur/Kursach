@@ -20,5 +20,6 @@ namespace book_hotel_api.Entities
         public string? Image { get; set; }
         public List<Image>? Images { get; set; }
         public List<Room>? Rooms { get; set; }
+        public List<Reservation>? Reservations { get; set; }
     }
 }
