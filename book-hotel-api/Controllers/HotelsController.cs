@@ -2,6 +2,8 @@
 using book_hotel_api.DTOs;
 using book_hotel_api.Entities;
 using book_hotel_api.Helpers;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,6 +11,7 @@ namespace book_hotel_api.Controllers
 {
     [Route("api/hotels")]
     [ApiController]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "IsHotelOwner")]
     public class HotelsController : ControllerBase
     {
         private readonly ILogger<HotelsController> _logger;
@@ -26,6 +29,7 @@ namespace book_hotel_api.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public async Task<ActionResult<List<HotelDTO>>> Get()
         {
             var queryable = _context.Hotels.AsQueryable();
@@ -34,6 +38,7 @@ namespace book_hotel_api.Controllers
         }
 
         [HttpGet("hotel/{Id:int}")]
+        [AllowAnonymous]
         public async Task<ActionResult<HotelDTO>> Get(int id)
         {
             var hotel = await _context.Hotels.Include(x => x.Rooms).Include(x => x.Images).FirstOrDefaultAsync(x => x.Id == id);
@@ -82,7 +87,7 @@ namespace book_hotel_api.Controllers
             return NoContent();
         }
 
-        [HttpDelete("delete/{id:int}")]
+        [HttpDelete("delete/{Id:int}")]
         public async Task<ActionResult> Delete(int id)
         {
             var hotel = await _context.Hotels.FirstOrDefaultAsync(x => x.Id == id);

@@ -14,6 +14,7 @@ namespace book_hotel_api.Controllers
 {
     [ApiController]
     [Route("api/accounts")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "IsAdmin")]
     public class AccountsController : ControllerBase
     {
         private readonly UserManager<IdentityUser> _userManager;
@@ -61,6 +62,7 @@ namespace book_hotel_api.Controllers
         }
 
         [HttpPost("create")]
+        [AllowAnonymous]
         public async Task<ActionResult<AuthenticationResponse>> Create(
             [FromBody] UserCredentials userCredentials)
         {
@@ -78,6 +80,7 @@ namespace book_hotel_api.Controllers
         }
 
         [HttpPost("login")]
+        [AllowAnonymous]
         public async Task<ActionResult<AuthenticationResponse>> Login(
             [FromBody] UserCredentials userCredentials)
         {
@@ -101,18 +104,17 @@ namespace book_hotel_api.Controllers
                 new Claim("email", userCredentials.Email)
             };
 
-            var user = await _userManager.FindByNameAsync(userCredentials.Email);
+            var user = await _userManager.FindByEmailAsync(userCredentials.Email);
             var claimsDB = await _userManager.GetClaimsAsync(user);
 
             claims.AddRange(claimsDB);
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["keyjwt"]));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var expiration = DateTime.UtcNow.AddYears(1);
 
             var token = new JwtSecurityToken(issuer: null, audience: null, claims: claims,
-                expires: expiration, signingCredentials: creds);
+                expires: expiration, signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256));
 
             return new AuthenticationResponse()
             {

@@ -10,7 +10,8 @@ namespace book_hotel_api.DTOs
         public DateTime StartDate { get; set; }
         [Required]
         public DateTime EndDate { get; set; }
-        public bool Confiramtion { get; set; }
+        public bool Confirmation { get; set; }
+        public bool Canceled { get; set; }
         [Required]
         public int HotelId { get; set; }
         [Required]

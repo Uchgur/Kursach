@@ -12,6 +12,7 @@ namespace book_hotel_api.Controllers
 {
     [ApiController]
     [Route("api/hotel/room/reservations")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class ReservationsController : Controller
     {
         private readonly ILogger<ReservationsController> _logger;
@@ -31,10 +32,11 @@ namespace book_hotel_api.Controllers
         }
 
         [HttpGet]
-        async public Task<ActionResult<List<ReservationDTO>>> Get(int roomId)
-        {
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "IsHotelOwner")]
+        async public Task<ActionResult<List<ReservationDTO>>> Get(int hotelId)
+        { 
             var queryable = _context.Reservations.AsQueryable();
-            var reservations = await queryable.OrderBy(x => x.Id).Where(x => x.RoomId == roomId).ToListAsync();
+            var reservations = await queryable.OrderBy(x => x.Confirmation).Where(x => x.HotelId == hotelId).Where(x => x.Canceled == false).ToListAsync();
 
             return _mapper.Map<List<ReservationDTO>>(reservations);
         }
@@ -55,8 +57,18 @@ namespace book_hotel_api.Controllers
         [HttpPost("create")]
         async public Task<ActionResult> Post([FromForm] ReservationCreationDTO reservationCreationDTO)
         {
+            var claim = HttpContext.User.Claims.FirstOrDefault(x => x.Type == "email");
+
+            if (claim == null)
+            {
+                return BadRequest("You are not logged in");
+            }
+
+            var email = claim.Value;
+            var user = await _userManager.FindByEmailAsync(email);
+
             var reservation = _mapper.Map<Reservation>(reservationCreationDTO);
-            reservation.UserId = "82c1ad93-703b-49f0-92b7-e1ca9ce0a6ba";
+            reservation.UserId = user.Id;
 
             _context.Add(reservation);
             await _context.SaveChangesAsync();
@@ -64,6 +76,7 @@ namespace book_hotel_api.Controllers
         }
 
         [HttpPut("confirmation/{Id:int}")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "IsHotelOwner")]
         async public Task<ActionResult> Put(int id, [FromForm] ReservationCreationDTO reservationCreationDTO)
         {
             var resevation = await _context.Reservations.FirstOrDefaultAsync(x => x.Id == id);
@@ -80,6 +93,7 @@ namespace book_hotel_api.Controllers
         }
 
         [HttpDelete("delete/{Id:int}")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "IsHotelOwner")]
         async public Task<ActionResult> Delete(int id)
         {
             var reservation = await _context.Reservations.FirstOrDefaultAsync(x => x.Id == id);

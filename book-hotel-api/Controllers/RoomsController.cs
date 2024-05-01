@@ -2,6 +2,8 @@
 using book_hotel_api.DTOs;
 using book_hotel_api.Entities;
 using book_hotel_api.Helpers;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,6 +11,7 @@ namespace book_hotel_api.Controllers
 {
     [ApiController]
     [Route("api/hotel/rooms")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "IsHotelOwner")]
     public class RoomsController : ControllerBase
     {
         private readonly ILogger<RoomsController> _logger;
@@ -26,6 +29,7 @@ namespace book_hotel_api.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public async Task<ActionResult<List<RoomDTO>>> Get(int hotelId)
         {
             var queryable = _context.Rooms.AsQueryable().Where(x => x.HotelId == hotelId);
@@ -34,6 +38,7 @@ namespace book_hotel_api.Controllers
         }
 
         [HttpGet("room/{Id:int}")]
+        [AllowAnonymous]
         public async Task<ActionResult<RoomDTO>> GetRoom(int id)
         {
             var room = await _context.Rooms.Include(x => x.Images).FirstOrDefaultAsync(x => x.Id == id);

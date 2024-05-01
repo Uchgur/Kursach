@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using book_hotel_api;
 
@@ -11,9 +12,11 @@ using book_hotel_api;
 namespace book_hotel_api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240410135322_CahngingReservaationTable")]
+    partial class CahngingReservaationTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -255,7 +258,7 @@ namespace book_hotel_api.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Hotels", (string)null);
+                    b.ToTable("Hotels");
                 });
 
             modelBuilder.Entity("book_hotel_api.Entities.Image", b =>
@@ -282,7 +285,7 @@ namespace book_hotel_api.Migrations
 
                     b.HasIndex("RoomId");
 
-                    b.ToTable("Image", (string)null);
+                    b.ToTable("Image");
                 });
 
             modelBuilder.Entity("book_hotel_api.Entities.Reservation", b =>
@@ -293,10 +296,7 @@ namespace book_hotel_api.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<bool>("Canceled")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("Confirmation")
+                    b.Property<bool>("Confiramtion")
                         .HasColumnType("bit");
 
                     b.Property<DateTime>("EndDate")
@@ -323,7 +323,7 @@ namespace book_hotel_api.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Reservations", (string)null);
+                    b.ToTable("Reservations");
                 });
 
             modelBuilder.Entity("book_hotel_api.Entities.Room", b =>
@@ -359,7 +359,7 @@ namespace book_hotel_api.Migrations
 
                     b.HasIndex("HotelId");
 
-                    b.ToTable("Rooms", (string)null);
+                    b.ToTable("Rooms");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

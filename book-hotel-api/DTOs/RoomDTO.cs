@@ -1,4 +1,5 @@
 ﻿using book_hotel_api.Entities;
+using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
 
 namespace book_hotel_api.DTOs
