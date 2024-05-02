@@ -22,5 +22,8 @@ namespace book_hotel_api.Entities
         public List<Reservation>? Reservations { get; set; }
         [ForeignKey("Hotel")]
         public int HotelId { get; set; }
+        [Required]
+        public string UserId { get; set; }
+        public IdentityUser User { get; set; }
     }
 }

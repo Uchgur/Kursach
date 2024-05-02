@@ -4,6 +4,7 @@ using book_hotel_api.Entities;
 using book_hotel_api.Helpers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,13 +19,15 @@ namespace book_hotel_api.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly IFileStorageService _fileStorageService;
+        private readonly UserManager<IdentityUser> _userManager;
         private readonly string containerName = "hotels";
 
-        public HotelsController(ILogger<HotelsController> logger, ApplicationDbContext context, IMapper mapper, IFileStorageService fileStorageService)
+        public HotelsController(ILogger<HotelsController> logger, ApplicationDbContext context, IMapper mapper, UserManager<IdentityUser> userManager, IFileStorageService fileStorageService)
         {
             _logger = logger;
             _context = context;
             _mapper = mapper;
+            _userManager = userManager;
             _fileStorageService = fileStorageService;
         }
 
@@ -33,6 +36,24 @@ namespace book_hotel_api.Controllers
         public async Task<ActionResult<List<HotelDTO>>> Get()
         {
             var queryable = _context.Hotels.AsQueryable();
+            var hotels = await queryable.OrderBy(x => x.Name).ToListAsync();
+            return _mapper.Map<List<HotelDTO>>(hotels);
+        }
+
+        [HttpGet("myhotels")]
+        public async Task<ActionResult<List<HotelDTO>>> GetMyHotels()
+        {
+            var claim = HttpContext.User.Claims.FirstOrDefault(x => x.Type == "email");
+
+            if (claim == null)
+            {
+                return BadRequest("You are not logged in");
+            }
+
+            var email = claim.Value;
+            var user = await _userManager.FindByEmailAsync(email);
+
+            var queryable = _context.Hotels.AsQueryable().Where(x => x.UserId == user.Id);
             var hotels = await queryable.OrderBy(x => x.Name).ToListAsync();
             return _mapper.Map<List<HotelDTO>>(hotels);
         }
@@ -51,10 +72,41 @@ namespace book_hotel_api.Controllers
             return _mapper.Map<HotelDTO>(hotel);
         }
 
+        [HttpGet("filter")]
+        [AllowAnonymous]
+        public async Task<ActionResult<List<HotelDTO>>> Filter([FromQuery] FilterHotelsDTO filterHotelsDTO)
+        {
+            var hotelsQueryable = _context.Hotels.AsQueryable();
+
+            if (!string.IsNullOrEmpty(filterHotelsDTO.Country))
+            {
+                hotelsQueryable = hotelsQueryable.Where(x => x.Country.Contains(filterHotelsDTO.Country));
+            }
+
+            if (!string.IsNullOrEmpty(filterHotelsDTO.City))
+            {
+                hotelsQueryable = hotelsQueryable.Where(x => x.City.Contains(filterHotelsDTO.City));
+            }
+
+            var hotels = await hotelsQueryable.OrderBy(x => x.Name).ToListAsync();
+            return _mapper.Map<List<HotelDTO>>(hotels);
+        }
+
         [HttpPost("create")]
         public async Task<ActionResult> Post([FromForm] HotelCreationDTO hotelCreationDTO)
         {
+            var claim = HttpContext.User.Claims.FirstOrDefault(x => x.Type == "email");
+
+            if (claim == null)
+            {
+                return BadRequest("You are not logged in");
+            }
+
+            var email = claim.Value;
+            var user = await _userManager.FindByEmailAsync(email);
+
             var hotel = _mapper.Map<Hotel>(hotelCreationDTO);
+            hotel.UserId = user.Id;
 
             if (hotelCreationDTO.Image != null)
             {

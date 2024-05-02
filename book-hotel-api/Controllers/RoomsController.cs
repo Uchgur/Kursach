@@ -4,6 +4,7 @@ using book_hotel_api.Entities;
 using book_hotel_api.Helpers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,14 +19,16 @@ namespace book_hotel_api.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly IFileStorageService _fileStorageService;
+        private readonly UserManager<IdentityUser> _userManager;
         private readonly string containerName = "rooms";
 
-        public RoomsController(ILogger<RoomsController> logger, ApplicationDbContext context, IMapper mapper, IFileStorageService fileStorageService)
+        public RoomsController(ILogger<RoomsController> logger, ApplicationDbContext context, IMapper mapper, UserManager<IdentityUser> userManager, IFileStorageService fileStorageService)
         {
             _logger = logger;
             _context = context;
             _mapper = mapper;
             _fileStorageService = fileStorageService;
+            _userManager = userManager;
         }
 
         [HttpGet]
@@ -51,10 +54,41 @@ namespace book_hotel_api.Controllers
             return _mapper.Map<RoomDTO>(room);
         }
 
+        [HttpGet("filter")]
+        [AllowAnonymous]
+        public async Task<ActionResult<List<RoomDTO>>> Filter([FromQuery] FilterRoomsDTO filterRoomsDTO, int hotelId)
+        {
+            var roomsQueryable = _context.Rooms.AsQueryable().Where(x => x.HotelId == hotelId);
+
+            if (!string.IsNullOrEmpty(filterRoomsDTO.Type))
+            {
+                roomsQueryable = roomsQueryable.Where(x => x.Type.Contains(filterRoomsDTO.Type));
+            }
+
+            if (!string.IsNullOrEmpty(filterRoomsDTO.Price))
+            {
+                roomsQueryable = roomsQueryable.Where(x => x.Price.Contains(filterRoomsDTO.Price));
+            }
+
+            var rooms = await roomsQueryable.OrderBy(x => x.Type).ToListAsync();
+            return _mapper.Map<List<RoomDTO>>(rooms);
+        }
+
         [HttpPost("create")]
         public async Task<ActionResult> Post([FromForm] RoomCreationDTO roomCreationDTO)
         {
+            var claim = HttpContext.User.Claims.FirstOrDefault(x => x.Type == "email");
+
+            if (claim == null)
+            {
+                return BadRequest("You are not logged in");
+            }
+
+            var email = claim.Value;
+            var user = await _userManager.FindByEmailAsync(email);
+
             var room = _mapper.Map<Room>(roomCreationDTO);
+            room.UserId = user.Id;
 
             if (roomCreationDTO.Image != null)
             {

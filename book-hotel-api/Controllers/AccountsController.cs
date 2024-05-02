@@ -45,6 +45,23 @@ namespace book_hotel_api.Controllers
             return _mapper.Map<List<UserDTO>>(users);
         }
 
+        [HttpGet("currentUser")]
+        [AllowAnonymous]
+        public async Task<ActionResult<UserDTO>> Get()
+        {
+            var claim = HttpContext.User.Claims.FirstOrDefault(x => x.Type == "email");
+
+            if (claim == null)
+            {
+                return BadRequest("You are not logged in");
+            }
+
+            var email = claim.Value;
+            var user = await _userManager.FindByEmailAsync(email);
+
+            return _mapper.Map<UserDTO>(user);
+        }
+
         [HttpPost("makeAdmin")]
         public async Task<ActionResult> MakeAdmin([FromBody] string userId)
         {

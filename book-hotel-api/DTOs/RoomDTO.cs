@@ -14,5 +14,6 @@ namespace book_hotel_api.DTOs
         public string? Image { get; set; }
         public List<Image>? Images { get; set; }
         public int HotelId { get; set; }
+        public string UserId { get; set; }
     }
 }
