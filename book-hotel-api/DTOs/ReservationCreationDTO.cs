@@ -10,6 +10,14 @@ namespace book_hotel_api.DTOs
         public DateTime StartDate { get; set; }
         [Required]
         public DateTime EndDate { get; set; }
+        [Required]
+        public string Name { get; set; }
+        [Required]
+        public string Surname { get; set; }
+        [Required]
+        public bool PayOffline { get; set; }
+        [Required]
+        public bool PayOnline { get; set; }
         public bool Confirmation { get; set; }
         public bool Canceled { get; set; }
         [Required]

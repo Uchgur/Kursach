@@ -9,6 +9,10 @@ namespace book_hotel_api.DTOs
         public int Id { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
+        public string Name { get; set; }
+        public string Surname { get; set; }
+        public bool PayOffline { get; set; }
+        public bool PayOnline { get; set; }
         public bool Confirmation { get; set; }
         public bool Canceled { get; set; }
         public int HotelId { get; set; }

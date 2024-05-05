@@ -12,6 +12,14 @@ namespace book_hotel_api.Entities
         public DateTime StartDate { get; set; }
         [Required]
         public DateTime EndDate { get; set; }
+        [Required]
+        public string Name { get; set; }
+        [Required]
+        public string Surname { get; set; }
+        [Required]
+        public bool PayOffline { get; set; }
+        [Required]
+        public bool PayOnline { get; set; }
         public bool Confirmation { get; set; } = false;
         public bool Canceled { get; set; } = false;
         [Required]
