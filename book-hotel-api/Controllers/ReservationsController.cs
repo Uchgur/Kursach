@@ -41,6 +41,25 @@ namespace book_hotel_api.Controllers
             return _mapper.Map<List<ReservationDTO>>(reservations);
         }
 
+        [HttpGet("myreservations")]
+        async public Task<ActionResult<List<ReservationDTO>>> Get()
+        {
+            var claim = HttpContext.User.Claims.FirstOrDefault(x => x.Type == "email");
+
+            if (claim == null)
+            {
+                return BadRequest("You are not logged in");
+            }
+
+            var email = claim.Value;
+            var user = await _userManager.FindByEmailAsync(email);
+
+            var queryable = _context.Reservations.AsQueryable();
+            var reservations = await queryable.OrderBy(x => x.Confirmation).Where(x => x.UserId == user.Id).ToListAsync();
+
+            return _mapper.Map<List<ReservationDTO>>(reservations);
+        }
+
         [HttpGet("reservation/{Id:int}")]
         async public Task<ActionResult<ReservationDTO>> GetRes(int id)
         {

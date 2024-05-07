@@ -37,9 +37,13 @@ namespace book_hotel_api.Controllers
         }
 
         [HttpGet("listUsers")]
-        public async Task<ActionResult<List<UserDTO>>> GetListUsers()
+        public async Task<ActionResult<List<UserDTO>>> GetListUsers([FromQuery] FilterUsersDTO filterUsersDTO)
         {
             var queryable = _context.Users.AsQueryable();
+            if (!string.IsNullOrEmpty(filterUsersDTO.Email))
+            {
+                queryable = queryable.Where(x => x.Email.Contains(filterUsersDTO.Email));
+            }
             var users = await queryable.OrderBy(x => x.Email).ToListAsync();
 
             return _mapper.Map<List<UserDTO>>(users);
@@ -70,11 +74,27 @@ namespace book_hotel_api.Controllers
             return NoContent();
         }
 
+        [HttpPost("removeAdmin")]
+        public async Task<ActionResult> RemoveAdmin([FromBody] string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            await _userManager.RemoveClaimAsync(user, new Claim("role", "admin"));
+            return NoContent();
+        }
+
         [HttpPost("makeHotelOwner")]
         public async Task<ActionResult> MakeHotelOwner([FromBody] string userId)
         {
             var user = await _userManager.FindByIdAsync(userId);
             await _userManager.AddClaimAsync(user, new Claim("role", "hotelOwner"));
+            return NoContent();
+        }
+
+        [HttpPost("removeHotelOwner")]
+        public async Task<ActionResult> RemoveHotelOwner([FromBody] string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            await _userManager.RemoveClaimAsync(user, new Claim("role", "hotelOwner"));
             return NoContent();
         }
 
